@@ -26,7 +26,7 @@ EAX7_MATCH = '0x00000007 0x00:'
 EXP_LINELN = 76
 
 
-def get_register_mask(regs):
+def get_register_mask(regs, nested_hvm=None):
     """ Take a list of register values and return the calculated mask """
     reg_n = len(regs)
     mask = ''
@@ -35,7 +35,12 @@ def get_register_mask(regs):
         for reg in regs:
             counter += 1 if (reg & (1 << idx) > 0) else 0
         # if we have all 1s or all 0s we don't mask the bit
-        if counter == reg_n or counter == 0:
+        # libxc clears this bit for HVM guests when not nested_hvm
+        # However the custom cpuid mask appears to clobbers these
+        # default settings.
+        if nested_hvm is not None and not nested_hvm and idx == 5:
+            mask = mask + '0'
+        elif counter == reg_n or counter == 0:
             mask = mask + 'x'
         else:
             mask = mask + '0'
@@ -43,7 +48,7 @@ def get_register_mask(regs):
     return mask[::-1]
 
 
-def print_xl_masking_config(nodes):
+def print_xl_masking_config(nodes, nested_hvm):
     """ Take a dictionary of nodes containing their registers and print out CPUID masking configuration for xl """
     nomasking = 'x' * 32
     eax1_ecx_regs = []
@@ -56,7 +61,7 @@ def print_xl_masking_config(nodes):
         eax7_ebx_regs.append(nodes[node]['eax7_ebx'])
         eax7_ecx_regs.append(nodes[node]['eax7_ecx'])
     # Get masks for the EAX1 and EAX7 registers
-    eax1_ecx_mask = get_register_mask(eax1_ecx_regs)
+    eax1_ecx_mask = get_register_mask(eax1_ecx_regs, nested_hvm)
     eax1_edx_mask = get_register_mask(eax1_edx_regs)
     eax7_ebx_mask = get_register_mask(eax7_ebx_regs)
     eax7_ecx_mask = get_register_mask(eax7_ecx_regs)
@@ -73,7 +78,7 @@ def print_xl_masking_config(nodes):
     print cpuid_config
 
 
-def print_verbose_masking_info(nodes):
+def print_verbose_masking_info(nodes, nested_hvm):
     """ Take a dictionary of nodes containing their registers and print out verbose mask derivation information """
     eax1_ecx_regs = []
     eax1_edx_regs = []
@@ -93,7 +98,9 @@ def print_verbose_masking_info(nodes):
     for reg in eax1_ecx_regs:
         print '{0:032b}'.format(reg)
     print '================================'
-    print get_register_mask(eax1_ecx_regs)
+    print get_register_mask(eax1_ecx_regs, nested_hvm)
+    if not nested_hvm:
+        print 'Bit 5 (VMX) cleared since nested hvm is not enabled.'
 
     print
     print 'EAX1 EDX registers:'
@@ -121,6 +128,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A utility that calculates a XEN CPUID difference mask')
     parser.add_argument('node_files', nargs='*', help='Filenames of XEN node CPUID outputs')
     parser.add_argument('-v', '--verbose', action='store_true', help='Get detailed mask derivation information')
+    parser.add_argument('--nested-hvm', action='store_true', help='Enable nested HVM in mask')
     args = parser.parse_args()
     if len(args.node_files) < 2:
         print 'Need at least 2 files to do the comparison!'
@@ -172,6 +180,6 @@ if __name__ == '__main__':
             print 'File not found: ' + node
             sys.exit(1)
 
-    print_xl_masking_config(nodes)
+    print_xl_masking_config(nodes, args.nested_hvm)
     if args.verbose:
-        print_verbose_masking_info(nodes)
+        print_verbose_masking_info(nodes, args.nested_hvm)

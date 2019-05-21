@@ -31,7 +31,7 @@ server3~$ cpuid -1r > node3
 
 ~$ ./xen_maskcalc.py node1 node2 node3
 cpuid = [
-    "0x00000001:ecx=x00xxxxxx0xxxxxxxxx00xxxxxxxxxxx",
+    "0x00000001:ecx=x00xxxxxx0xxxxxxxxx00xxxxx0xxxxx",
     "0x00000007,0x00:ebx=xxxxxxxxxxxxxxxxxx00x0000x0x0x00"
 ]
 ```
@@ -41,7 +41,7 @@ With the `-v` or `--verbose` argument you get detailed mask derivation informati
 ```bash
 ~$ ./xen_maskcalc.py -v node1 node2
 cpuid = [
-    "0x00000001:ecx=x00xxxxxx0xxxxxxxxx00xxxxxxxxxxx",
+    "0x00000001:ecx=x00xxxxxx0xxxxxxxxx00xxxxx0xxxxx",
     "0x00000007,0x00:ebx=xxxxxxxxxxxxxxxxxx00x0000x0x0x00"
 ]
 
@@ -51,7 +51,8 @@ EAX1 ECX registers:
 01111111111111101111101111111111
 00011111101111101110001111111111
 ================================
-x00xxxxxx0xxxxxxxxx00xxxxxxxxxxx
+x00xxxxxx0xxxxxxxxx00xxxxx0xxxxx
+Bit 5 (VMX) cleared since nested hvm is not enabled.
 
 EAX1 EDX registers:
 10111111111010111111101111111111
@@ -72,3 +73,5 @@ EAX7,0 ECX registers:
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ```
+
+Use the `--nested-hvm` command line option if you will be using nested hvm.
