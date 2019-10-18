@@ -70,7 +70,7 @@ def print_xl_masking_config(nodes):
         cpuid_config += ',ecx=' + eax7_ecx_mask
     cpuid_config += '"\n'
     cpuid_config += ']'
-    print cpuid_config
+    print(cpuid_config)
 
 
 def print_verbose_masking_info(nodes):
@@ -85,36 +85,36 @@ def print_verbose_masking_info(nodes):
         eax7_ebx_regs.append(nodes[node]['eax7_ebx'])
         eax7_ecx_regs.append(nodes[node]['eax7_ecx'])
 
-    print
-    print '== Detailed mask derivation info =='
-    print
+    print("")
+    print('== Detailed mask derivation info ==')
+    print("")
 
-    print 'EAX1 ECX registers:'
+    print('EAX1 ECX registers:')
     for reg in eax1_ecx_regs:
-        print '{0:032b}'.format(reg)
-    print '================================'
-    print get_register_mask(eax1_ecx_regs)
+        print('{0:032b}'.format(reg))
+    print('================================')
+    print(get_register_mask(eax1_ecx_regs))
 
-    print
-    print 'EAX1 EDX registers:'
+    print("")
+    print('EAX1 EDX registers:')
     for reg in eax1_edx_regs:
-        print '{0:032b}'.format(reg)
-    print '================================'
-    print get_register_mask(eax1_edx_regs)
+        print('{0:032b}'.format(reg))
+    print('================================')
+    print(get_register_mask(eax1_edx_regs))
 
-    print
-    print 'EAX7,0 EBX registers:'
+    print("")
+    print('EAX7,0 EBX registers:')
     for reg in eax7_ebx_regs:
-        print '{0:032b}'.format(reg)
-    print '================================'
-    print get_register_mask(eax7_ebx_regs)
+        print('{0:032b}'.format(reg))
+    print('================================')
+    print(get_register_mask(eax7_ebx_regs))
 
-    print
-    print 'EAX7,0 ECX registers:'
+    print("")
+    print('EAX7,0 ECX registers:')
     for reg in eax7_ecx_regs:
-        print '{0:032b}'.format(reg)
-    print '================================'
-    print get_register_mask(eax7_ecx_regs)
+        print('{0:032b}'.format(reg))
+    print('================================')
+    print(get_register_mask(eax7_ecx_regs))
 
 
 if __name__ == '__main__':
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true', help='Get detailed mask derivation information')
     args = parser.parse_args()
     if len(args.node_files) < 2:
-        print 'Need at least 2 files to do the comparison!'
+        print('Need at least 2 files to do the comparison!')
         parser.print_help()
         sys.exit(1)
     
@@ -133,7 +133,7 @@ if __name__ == '__main__':
             try:
                 f = open(node)
             except IOError as e:
-                print "I/O error({0}): {1}".format(e.errno, e.strerror)
+                print("I/O error({0}): {1}".format(e.errno, e.strerror))
                 sys.exit(1)
             else:
                 lines = [line.strip() for line in f]
@@ -149,7 +149,7 @@ if __name__ == '__main__':
                         eax7 = line
                 # if we get garbled data we should probably just give up
                 if len(eax1) < EXP_LINELN or len(eax7) < EXP_LINELN:
-                    print 'ERROR: invalid data format in file : ' + node
+                    print('ERROR: invalid data format in file : ' + node)
                     sys.exit(1)
 
                 # check if we can actually parse the strings into integers
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                     eax7_ebx = int(eax7.split()[3].split('=')[1], 0)
                     eax7_ecx = int(eax7.split()[4].split('=')[1], 0)
                 except ValueError:
-                    print 'ERROR: invalid data format in file: ' + node
+                    print('ERROR: invalid data format in file: ' + node)
                     sys.exit(1)
 
                 nodes[node] = dict()
@@ -169,7 +169,7 @@ if __name__ == '__main__':
                 nodes[node]['eax7_ecx'] = eax7_ecx
                 f.close()
         else:
-            print 'File not found: ' + node
+            print('File not found: ' + node)
             sys.exit(1)
 
     print_xl_masking_config(nodes)
